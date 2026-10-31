@@ -43,6 +43,22 @@ Key patterns:
 - **sqlc code generation**: SQL files are the source of truth; generated Go code in `internal/db` should not be edited by hand.
 - **Partial updates**: `PUT` uses nullable parameters with `COALESCE`, so omitted fields keep their current value.
 
+## Repository Pattern
+
+The data access layer is hidden behind an interface (`TodoRepository` in `internal/repository/todo_repository.go`). The service depends only on that interface, not on pgx/SQL:
+
+```go
+type TodoRepository interface {
+    Create(ctx context.Context, title string, description *string) (db.Todo, error)
+    GetByID(ctx context.Context, id uuid.UUID) (db.Todo, error)
+    List(ctx context.Context) ([]db.Todo, error)
+    Update(ctx context.Context, id uuid.UUID, title, description *string, completed *bool) (db.Todo, error)
+    Delete(ctx context.Context, id uuid.UUID) error
+}
+```
+
+A concrete `todoRepository` implements it using sqlc-generated code. This makes the service testable (inject a fake) and keeps SQL details out of business logic.
+
 ## Getting Started
 
 ### Prerequisites
