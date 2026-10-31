@@ -22,4 +22,8 @@ down:
 	docker compose down
 
 migrate:
-	@echo "Apply db/migrations/*.sql with your migration tool (e.g. goose)"
+	@set -a; . ./.env; set +a; \
+	for f in db/migrations/*.sql; do \
+		echo "Applying $$f"; \
+		psql "$$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$$f" || exit 1; \
+	done

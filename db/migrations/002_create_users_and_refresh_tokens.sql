@@ -1,4 +1,3 @@
--- +goose Up
 CREATE TABLE IF NOT EXISTS users (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email         TEXT NOT NULL UNIQUE,
@@ -18,7 +17,3 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
 );
 
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id);
-
--- +goose Down
-DROP TABLE IF EXISTS refresh_tokens;
-DROP TABLE IF EXISTS users;
