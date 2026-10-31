@@ -42,7 +42,7 @@ func main() {
 	todoHandler := handler.NewTodoHandler(todoService)
 
 	// Router
-	router := handler.NewRouter(todoHandler)
+	router := handler.NewRouter(todoHandler, pool)
 
 	// Server
 	server := &http.Server{

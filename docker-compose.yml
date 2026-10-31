@@ -11,6 +11,24 @@ services:
       - "127.0.0.1:5432:5432"
     volumes:
       - todo_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U todo -d todo_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    container_name: todo-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://todo:todo123@postgres:5432/todo_db?sslmode=disable
+      APP_PORT: "8080"
+    ports:
+      - "8080:8080"
 
 volumes:
   todo_pgdata:

@@ -7,12 +7,13 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 //go:embed docs
 var docsFS embed.FS
 
-func NewRouter(todoHandler *TodoHandler) http.Handler {
+func NewRouter(todoHandler *TodoHandler, pool *pgxpool.Pool) http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
@@ -31,6 +32,13 @@ func NewRouter(todoHandler *TodoHandler) http.Handler {
 	})
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+		if pool != nil {
+			if err := pool.Ping(r.Context()); err != nil {
+				w.WriteHeader(http.StatusServiceUnavailable)
+				w.Write([]byte(`{"status":"unhealthy"}`))
+				return
+			}
+		}
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"status":"ok"}`))
 	})

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -14,10 +15,17 @@ type Config struct {
 func Load() (*Config, error) {
 	_ = godotenv.Load()
 
-	return &Config{
-		DatabaseURL: getEnv("DATABASE_URL", "postgres://todo:todo123@localhost:5432/todo_db?sslmode=disable"),
+	cfg := &Config{
+		DatabaseURL: getEnv("DATABASE_URL", ""),
 		AppPort:     getEnv("APP_PORT", "8080"),
-	}, nil
+	}
+	if cfg.DatabaseURL == "" {
+		return nil, fmt.Errorf("DATABASE_URL is required")
+	}
+	if cfg.AppPort == "" {
+		cfg.AppPort = "8080"
+	}
+	return cfg, nil
 }
 
 func getEnv(key, fallback string) string {
