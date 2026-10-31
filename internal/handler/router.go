@@ -8,12 +8,14 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	authmw "github.com/techxtrasol/todo-app/internal/middleware"
 )
 
 //go:embed docs
 var docsFS embed.FS
 
-func NewRouter(todoHandler *TodoHandler, pool *pgxpool.Pool) http.Handler {
+func NewRouter(todoHandler *TodoHandler, authHandler *AuthHandler, jwtSecret string, pool *pgxpool.Pool) http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
@@ -22,7 +24,19 @@ func NewRouter(todoHandler *TodoHandler, pool *pgxpool.Pool) http.Handler {
 	r.Use(middleware.Recoverer)
 
 	r.Route("/api/v1", func(r chi.Router) {
+		r.Route("/auth", func(r chi.Router) {
+			r.Post("/register", authHandler.Register)
+			r.Post("/login", authHandler.Login)
+			r.Post("/refresh", authHandler.Refresh)
+			r.Post("/logout", authHandler.Logout)
+			r.Group(func(r chi.Router) {
+				r.Use(authmw.Auth(jwtSecret))
+				r.Get("/me", authHandler.Me)
+			})
+		})
+
 		r.Route("/todos", func(r chi.Router) {
+			r.Use(authmw.Auth(jwtSecret))
 			r.Get("/", todoHandler.List)
 			r.Post("/", todoHandler.Create)
 			r.Get("/{id}", todoHandler.GetByID)

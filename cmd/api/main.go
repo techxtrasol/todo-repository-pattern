@@ -41,8 +41,12 @@ func main() {
 	todoService := service.NewTodoService(todoRepo)
 	todoHandler := handler.NewTodoHandler(todoService)
 
+	userRepo, refreshRepo := repository.NewAuthRepository(pool)
+	authService := service.NewAuthService(userRepo, refreshRepo, cfg)
+	authHandler := handler.NewAuthHandler(authService)
+
 	// Router
-	router := handler.NewRouter(todoHandler, pool)
+	router := handler.NewRouter(todoHandler, authHandler, cfg.JWTSecret, pool)
 
 	// Server
 	server := &http.Server{

@@ -143,6 +143,32 @@ Only provided fields are updated.
 - Redoc: `http://localhost:8080/redoc`
 - OpenAPI spec: `http://localhost:8080/openapi.yaml`
 
+## Authentication
+
+All `/api/v1/todos` endpoints require a JWT access token:
+
+```
+Authorization: Bearer <access_token>
+```
+
+### Register
+`POST /api/v1/auth/register`
+```json
+{ "email": "user@example.com", "password": "secret" }
+```
+
+### Login
+`POST /api/v1/auth/login` → returns `access_token` and `refresh_token`.
+
+### Refresh
+`POST /api/v1/auth/refresh` with `{ "refresh_token": "..." }`.
+
+### Logout
+`POST /api/v1/auth/logout` with `{ "refresh_token": "..." }`.
+
+### Current user
+`GET /api/v1/auth/me` (requires access token).
+
 ## Notes
 - `.env` is gitignored; never commit real credentials.
 - Postgres is bound to `127.0.0.1` only to avoid exposing it to the network.
